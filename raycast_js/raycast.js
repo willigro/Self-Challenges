@@ -4,7 +4,7 @@ var delay = 30
 var maxWidth = window.innerWidth
 var maxHeight = window.innerHeight
 
-var fixedSize = 10
+var fixedSize = 5
 var WALL_WIDTH = 2
 var WALL_HEIGHT = 100
 
@@ -42,7 +42,7 @@ function configure() {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 20);
+    particle.createRays(-180, 180, 5);
     ctx.strokeStyle = "blue"
 }
 
@@ -105,32 +105,25 @@ class Particle {
 class Ray {
     constructor(a) {
         this.a = a
+        this.cosHandled = 100 * Math.cos(this.a)
+        this.sinHandled = 100 * Math.sin(this.a)
     }
 
     update(x, y) {
         this.x = x
         this.y = y
-        this.dirX = 100 * Math.cos(this.a) * x
-        this.dirY = 100 * Math.sin(this.a) * y
+        this.dirX = this.cosHandled * x
+        this.dirY = this.sinHandled * y
 
-        let first = true
         for (let w of walls) {
             const t = this.intersect(w)
             if (t) {
                 ctx.fillStyle = "red"
-                if (first) {
-                    this.dirX = t[0]
-                    this.dirY = t[1]
-                } else {
-                    if (t[0] < this.dirX)
-                        this.dirX = t[0]
-                    if (t[1] < this.dirY)
-                        this.dirY = t[1]
-                }
-                first = false
+                this.dirX = t[0]
+                this.dirY = t[1]
+                ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
             }
         }
-        ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
     }
 
     draw() {
