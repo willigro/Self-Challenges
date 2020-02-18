@@ -1,12 +1,14 @@
 
 var ctx
-var delay = 30
+var delay = 20
 var maxWidth = window.innerWidth
 var maxHeight = window.innerHeight
 
 var fixedSize = 5
-var WALL_WIDTH = 2
-var WALL_HEIGHT = 100
+var WALL_WIDTH = 200
+var WALL_HEIGHT = 200
+var LIMIT_RANDOM = 1000
+var LIMIT_WALLS = 10
 
 var particle
 var walls = []
@@ -16,6 +18,10 @@ window.onload = function () {
     canvas.width = maxWidth
     canvas.height = maxHeight
     ctx = canvas.getContext("2d")
+    if (this.LIMIT_RANDOM > this.maxWidth)
+        this.LIMIT_RANDOM = this.maxWidth
+    if (this.LIMIT_RANDOM > this.maxHeight)
+        this.LIMIT_RANDOM = this.maxHeight
     configure()
     init()
 }
@@ -42,22 +48,29 @@ function configure() {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 5);
-    ctx.strokeStyle = "blue"
+    particle.createRays(-180, 180, 1);
 }
 
 function createWalls() {
-    walls.push(new Wall(50, 100, WALL_WIDTH, WALL_HEIGHT))
-    walls.push(new Wall(300, 100, WALL_WIDTH, WALL_HEIGHT))
-    walls.push(new Wall(300, 400, WALL_WIDTH, WALL_HEIGHT))
-    walls.push(new Wall(150, 400, WALL_WIDTH, WALL_HEIGHT))
-    walls.push(new Wall(800, 400, WALL_WIDTH, WALL_HEIGHT))
+    for (let i = 0; i < LIMIT_WALLS; i++) {
+        walls.push(
+            new Wall(
+                random(LIMIT_RANDOM),
+                random(LIMIT_RANDOM),
+                random(LIMIT_RANDOM),
+                random(LIMIT_RANDOM))
+        )
+    }
 }
 
 function drawBackground() {
     ctx.clearRect(0, 0, maxWidth, maxHeight)
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, maxWidth, maxHeight)
+}
+
+function random(limit) {
+    return Math.floor(Math.random() * limit)
 }
 
 class Wall {
@@ -69,8 +82,14 @@ class Wall {
     }
 
     draw() {
-        ctx.fillStyle = "white"
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        // ctx.fillStyle = "white"
+        // ctx.fillRect(this.x, this.y, this.width, this.height)
+        ctx.strokeStyle = "blue"
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.width, this.y + this.height);
+        ctx.closePath();
+        ctx.stroke();
     }
 }
 
@@ -114,19 +133,33 @@ class Ray {
         this.y = y
         this.dirX = this.cosHandled * x
         this.dirY = this.sinHandled * y
-
+        this.touch = false
+        let selectedT = null
         for (let w of walls) {
             const t = this.intersect(w)
             if (t) {
-                ctx.fillStyle = "red"
-                this.dirX = t[0]
-                this.dirY = t[1]
-                ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
+                this.touch = true
+                if (selectedT) {
+                    if (this.distance(selectedT[0], selectedT[1]) >
+                        this.distance(t[0], t[1])) {
+                        selectedT = t
+                    }
+                } else
+                    selectedT = t
             }
+        }
+        if (this.touch) {
+            this.dirX = selectedT[0]
+            this.dirY = selectedT[1]
         }
     }
 
     draw() {
+        if (this.touch) {
+            ctx.fillStyle = "red"
+            ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
+        }
+        ctx.strokeStyle = "white"
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.dirX, this.dirY);
@@ -137,8 +170,8 @@ class Ray {
     intersect(wall) {
         const x1 = wall.x;
         const y1 = wall.y;
-        const x2 = wall.x + WALL_WIDTH;
-        const y2 = wall.y + WALL_HEIGHT;
+        const x2 = wall.x + wall.width;
+        const y2 = wall.y + wall.height;
 
         const x3 = this.x;
         const y3 = this.y;
@@ -162,6 +195,9 @@ class Ray {
         }
     }
 
-
-    // file:///C:/Users/Trinity/Desktop/Main/my%20repo/self%20challenges/raycast_js/index.html
+    distance(x, y) {
+        return Math.sqrt(
+            Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)
+        )
+    }
 }
