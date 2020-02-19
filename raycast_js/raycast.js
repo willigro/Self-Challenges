@@ -136,7 +136,7 @@ class Ray {
         this.handleTouch()
     }
 
-    handleTouch(){
+    handleTouch() {
         this.touch = false
         let selectedT = null
         for (let w of walls) {
