@@ -9,6 +9,7 @@ var WALL_WIDTH = 200
 var WALL_HEIGHT = 200
 var LIMIT_RANDOM = 1000
 var LIMIT_WALLS = 10
+var FILL = true
 
 var particle
 var walls = []
@@ -48,7 +49,7 @@ function configure() {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 2);
+    particle.createRays(-180, 180, 1);
 }
 
 function createWalls() {
@@ -86,6 +87,7 @@ class Wall {
         // ctx.fillRect(this.x, this.y, this.width, this.height)
         ctx.strokeStyle = "blue"
         ctx.beginPath();
+        ctx.lineWidth = 1
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x + this.width, this.y + this.height);
         ctx.closePath();
@@ -101,12 +103,30 @@ class Particle {
     }
 
     draw() {
-        // ctx.fillStyle = "green"
-        // ctx.fillRect(this.x, this.y, fixedSize, fixedSize)
+        if (FILL) {
+            this.drawAndFill()
+        } else
+            this.drawRays()
+    }
+
+    drawRays() {
         for (let r of this.rays) {
             r.update(this.x, this.y)
             r.draw()
         }
+    }
+
+    drawAndFill() {
+        ctx.beginPath();
+        for (let i = 0; i < this.rays.length; i++) {
+            this.rays[i].update(this.x, this.y)
+            this.rays[i].draw()
+        }
+        ctx.lineTo(this.rays[0].dirX, this.rays[0].dirY);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.fillStyle = "white";
+        ctx.fill();
     }
 
     createRays(min, max, each) {
@@ -164,11 +184,17 @@ class Ray {
             ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
         }
         ctx.strokeStyle = "white"
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.dirX, this.dirY);
-        ctx.closePath();
-        ctx.stroke();
+        if (FILL) {
+            ctx.lineTo(this.dirX, this.dirY);
+            ctx.stroke();
+        } else {
+            ctx.beginPath();
+            ctx.lineWidth = 1
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.dirX, this.dirY);
+            ctx.closePath();
+            ctx.stroke();
+        }
     }
 
     intersect(wall) {
