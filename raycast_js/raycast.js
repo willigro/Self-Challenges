@@ -18,10 +18,10 @@ window.onload = function () {
     canvas.width = maxWidth
     canvas.height = maxHeight
     ctx = canvas.getContext("2d")
-    if (this.LIMIT_RANDOM > this.maxWidth)
-        this.LIMIT_RANDOM = this.maxWidth
-    if (this.LIMIT_RANDOM > this.maxHeight)
-        this.LIMIT_RANDOM = this.maxHeight
+    // if (this.LIMIT_RANDOM > this.maxWidth)
+    //     this.LIMIT_RANDOM = this.maxWidth
+    // if (this.LIMIT_RANDOM > this.maxHeight)
+    //     this.LIMIT_RANDOM = this.maxHeight
     configure()
     init()
 }
@@ -48,17 +48,17 @@ function configure() {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 1);
+    particle.createRays(-180, 180, 2);
 }
 
 function createWalls() {
     for (let i = 0; i < LIMIT_WALLS; i++) {
         walls.push(
             new Wall(
-                random(LIMIT_RANDOM),
-                random(LIMIT_RANDOM),
-                random(LIMIT_RANDOM),
-                random(LIMIT_RANDOM))
+                random(maxWidth / 2),
+                random(maxHeight / 2),
+                random(maxWidth),
+                random(maxHeight))
         )
     }
 }
@@ -133,6 +133,10 @@ class Ray {
         this.y = y
         this.dirX = this.cosHandled * x
         this.dirY = this.sinHandled * y
+        this.handleTouch()
+    }
+
+    handleTouch(){
         this.touch = false
         let selectedT = null
         for (let w of walls) {
