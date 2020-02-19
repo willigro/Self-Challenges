@@ -7,7 +7,6 @@ var maxHeight = window.innerHeight
 var fixedSize = 5
 var WALL_WIDTH = 200
 var WALL_HEIGHT = 200
-var LIMIT_RANDOM = 1000
 var LIMIT_WALLS = 10
 var FILL = true
 
@@ -19,10 +18,6 @@ window.onload = function () {
     canvas.width = maxWidth
     canvas.height = maxHeight
     ctx = canvas.getContext("2d")
-    // if (this.LIMIT_RANDOM > this.maxWidth)
-    //     this.LIMIT_RANDOM = this.maxWidth
-    // if (this.LIMIT_RANDOM > this.maxHeight)
-    //     this.LIMIT_RANDOM = this.maxHeight
     configure()
     init()
 }
