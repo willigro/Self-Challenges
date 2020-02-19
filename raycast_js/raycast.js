@@ -13,6 +13,12 @@ var FILL = true
 var particle
 var walls = []
 
+const COLOR_RAY = "white"
+const COLOR_PARTICLE = "green"
+const COLOR_TOUCH = "red"
+const COLOR_BACKGROUND = "black"
+const COLOR_WALL = "blue"
+
 window.onload = function () {
     var canvas = document.getElementById("canvas")
     canvas.width = maxWidth
@@ -61,7 +67,7 @@ function createWalls() {
 
 function drawBackground() {
     ctx.clearRect(0, 0, maxWidth, maxHeight)
-    ctx.fillStyle = "black"
+    ctx.fillStyle = COLOR_BACKGROUND
     ctx.fillRect(0, 0, maxWidth, maxHeight)
 }
 
@@ -80,7 +86,7 @@ class Wall {
     draw() {
         // ctx.fillStyle = "white"
         // ctx.fillRect(this.x, this.y, this.width, this.height)
-        ctx.strokeStyle = "blue"
+        ctx.strokeStyle = COLOR_WALL
         ctx.beginPath();
         ctx.lineWidth = 1
         ctx.moveTo(this.x, this.y);
@@ -120,7 +126,7 @@ class Particle {
         ctx.lineTo(this.rays[0].dirX, this.rays[0].dirY);
         ctx.stroke();
         ctx.closePath();
-        ctx.fillStyle = "white";
+        ctx.fillStyle = COLOR_RAY;
         ctx.fill();
     }
 
@@ -175,10 +181,10 @@ class Ray {
 
     draw() {
         if (this.touch) {
-            ctx.fillStyle = "red"
+            ctx.fillStyle = COLOR_TOUCH
             ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
         }
-        ctx.strokeStyle = "white"
+        ctx.strokeStyle = COLOR_RAY
         if (FILL) {
             ctx.lineTo(this.dirX, this.dirY);
             ctx.stroke();
