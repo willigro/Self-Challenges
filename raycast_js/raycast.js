@@ -1,6 +1,6 @@
 
 var ctx
-var delay = 20
+var delay = 1000 / 30
 var maxWidth = window.innerWidth
 var maxHeight = window.innerHeight
 
@@ -8,12 +8,12 @@ var fixedSize = 5
 var WALL_WIDTH = 200
 var WALL_HEIGHT = 200
 var LIMIT_WALLS = 10
-var FILL = true
+var FILL = false
 
 var particle
 var walls = []
 
-const COLOR_RAY = "white"
+var COLOR_RAY = "white"
 const COLOR_PARTICLE = "green"
 const COLOR_TOUCH = "red"
 const COLOR_BACKGROUND = "black"
@@ -48,9 +48,15 @@ function configure() {
     createParticle()
 }
 
+function prepareGradientLight(x1, y1, x2, y2) {
+    COLOR_RAY = ctx.createLinearGradient(x1, y1, x2, y2);
+    COLOR_RAY.addColorStop(0, "white");
+    COLOR_RAY.addColorStop(1, "black");
+}
+
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 1);
+    particle.createRays(-180, 180, 20);
 }
 
 function createWalls() {
@@ -63,6 +69,37 @@ function createWalls() {
                 random(maxHeight))
         )
     }
+    walls.push(
+        new Wall(
+            0,
+            0,
+            maxWidth,
+            0)
+    )
+
+    walls.push(
+        new Wall(
+            0,
+            0,
+            0,
+            maxHeight)
+    )
+
+    walls.push(
+        new Wall(
+            maxWidth,
+            0,
+            0,
+            maxHeight)
+    )
+
+    walls.push(
+        new Wall(
+            0,
+            maxHeight,
+            maxWidth,
+            0)
+    )
 }
 
 function drawBackground() {
@@ -84,8 +121,6 @@ class Wall {
     }
 
     draw() {
-        // ctx.fillStyle = "white"
-        // ctx.fillRect(this.x, this.y, this.width, this.height)
         ctx.strokeStyle = COLOR_WALL
         ctx.beginPath();
         ctx.lineWidth = 1
@@ -152,8 +187,8 @@ class Ray {
     update(x, y) {
         this.x = x
         this.y = y
-        this.dirX = this.cosHandled * x
-        this.dirY = this.sinHandled * y
+        this.dirX = this.cosHandled * this.x
+        this.dirY = this.sinHandled * this.y
         this.handleTouch()
     }
 
@@ -183,7 +218,10 @@ class Ray {
         if (this.touch) {
             ctx.fillStyle = COLOR_TOUCH
             ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
+        } else {
+            console.log(this.dirX, this.dirY)
         }
+        prepareGradientLight(this.x, this.y, this.dirX, this.dirY)
         ctx.strokeStyle = COLOR_RAY
         if (FILL) {
             ctx.lineTo(this.dirX, this.dirY);
