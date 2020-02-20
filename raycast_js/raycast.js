@@ -49,6 +49,7 @@ function configure() {
 }
 
 function prepareGradientLight(x1, y1, x2, y2) {
+    if(FILL) return
     COLOR_RAY = ctx.createLinearGradient(x1, y1, x2, y2);
     COLOR_RAY.addColorStop(0, "white");
     COLOR_RAY.addColorStop(1, "black");
@@ -56,7 +57,7 @@ function prepareGradientLight(x1, y1, x2, y2) {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 20);
+    particle.createRays(-180, 180, 3);
 }
 
 function createWalls() {
