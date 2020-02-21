@@ -10,11 +10,16 @@ var population = []
 var actualParticle
 var ordernedPopulation = []
 var littleParticles = []
+const CLASS_NONE = 0
+const CLASS_A = 1
+const CLASS_B = 2
+const CLASS_C = 3
 
-const COLOR_PARTICLE = "red"
+const COLOR_PARTICLE = "orange"
 const COLOR_BACKGROUND = "black"
 const COLOR_CLASS_A = "white"
 const COLOR_CLASS_B = "blue"
+const COLOR_CLASS_C = "red"
 
 window.onload = function () {
     var canvas = document.getElementById("canvas")
@@ -37,26 +42,43 @@ function initKNN() {
         insertAndSort(p, d)
     }
 
-    let a = 0
-    let b = 0
+    let count = [
+        [0, CLASS_A],
+        [0, CLASS_B],
+        [0, CLASS_C]
+    ]
+    
     for (let i = 0; i < K; i++) {
-        if (ordernedPopulation[i][0].class == 1) {
-            a++
-        } else {
-            b++
+        if (ordernedPopulation[i][0].type == CLASS_A) {
+            count[0][0]++
+        } else if (ordernedPopulation[i][0].type == CLASS_B) {
+            count[1][0]++
+        } else if (ordernedPopulation[i][0].type == CLASS_C) {
+            count[2][0]++
         }
         littleParticles.push(ordernedPopulation[i])
     }
-    if (a > b)
-        actualParticle.color = COLOR_CLASS_A
-    else
-        actualParticle.color = COLOR_CLASS_B
+
+    let high = 0
+    for (let i = 0; i < count.length; i++) {
+        if (i == 0) high = count[0]
+        else {
+            if (count[i][0] > count[i - 1][0]) {
+                high = count[i]
+            }
+        }
+    }
+
+    actualParticle.type = high[1]
+    actualParticle.defineColor()
     actualParticle.draw()
 }
 
 function onMouseMove(event) {
+    if (!actualParticle) return
     actualParticle.x = event.screenX
     actualParticle.y = event.screenY
+    drawBackground()
     initKNN()
 }
 
@@ -86,13 +108,27 @@ function prepare() {
     actualParticle = new Particle(
         random(maxWidth),
         random(maxHeight),
-        "red"
+        true,
+        CLASS_NONE
     )
     for (let i = 0; i < POPULATION_LENGTH; i++) {
         population.push(new Particle(
             random(maxWidth),
-            random(maxHeight)
+            random(maxHeight),
+            false,
+            randomType()
         ))
+    }
+}
+
+function randomType() {
+    const r = Math.random()
+    if (r < .3) {
+        return CLASS_A
+    } else if (r < .6) {
+        return CLASS_B
+    } else {
+        return CLASS_C
     }
 }
 
@@ -107,18 +143,23 @@ function drawBackground() {
 }
 
 class Particle {
-    constructor(x, y, selected) {
+    constructor(x, y, selected, type) {
         this.x = x
         this.y = y
         this.selected = selected
-        if (this.distance(maxWidth / 2, maxHeight / 2) < 400) {
-            this.class = 1
+        this.type = type
+        this.defineColor()
+    }
+
+    defineColor() {
+        if (this.type == CLASS_A) {
             this.color = COLOR_CLASS_A
-        } else {
-            this.class = 0
+        } else if (this.type == CLASS_B) {
             this.color = COLOR_CLASS_B
-        }
-        if (selected) this.color = COLOR_PARTICLE
+        } else if (this.type == CLASS_C) {
+            this.color = COLOR_CLASS_C
+        } else
+            this.color = COLOR_PARTICLE
     }
 
     distance(x, y) {
