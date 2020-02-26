@@ -57,7 +57,7 @@ function prepareGradientLight(x1, y1, x2, y2) {
 
 function createParticle() {
     particle = new Particle(0, 0)
-    particle.createRays(-180, 180, 3);
+    particle.createRays(-180, 180, .5);
 }
 
 function createWalls() {
