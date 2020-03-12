@@ -1,0 +1,4 @@
+- take pictures of the left profile
+- take pictures of the right profile
+- transform pictures to byte array
+- init training
