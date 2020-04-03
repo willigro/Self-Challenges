@@ -49,7 +49,7 @@ function configure() {
 }
 
 function prepareGradientLight(x1, y1, x2, y2) {
-    if(FILL) return
+    if (FILL) return
     COLOR_RAY = ctx.createLinearGradient(x1, y1, x2, y2);
     COLOR_RAY.addColorStop(0, "white");
     COLOR_RAY.addColorStop(1, "black");
@@ -220,20 +220,25 @@ class Ray {
             ctx.fillStyle = COLOR_TOUCH
             ctx.fillRect(this.dirX, this.dirY, fixedSize, fixedSize)
         } else {
-            console.log(this.dirX, this.dirY)
+            // console.log(this.dirX, this.dirY)
         }
-        prepareGradientLight(this.x, this.y, this.dirX, this.dirY)
+
         ctx.strokeStyle = COLOR_RAY
         if (FILL) {
             ctx.lineTo(this.dirX, this.dirY);
             ctx.stroke();
         } else {
+            // prepareGradientLight(this.x, this.y, this.dirX, this.dirY)
             ctx.beginPath();
-            ctx.lineWidth = 1
+            // ctx.lineWidth = 1
             ctx.moveTo(this.x, this.y);
             ctx.lineTo(this.dirX, this.dirY);
             ctx.closePath();
             ctx.stroke();
+
+            // i can apply a force on ray, or simply a loop
+            // the each time the color will be summed to a number to be updated to black -> white to black
+            // since all rays line will have the same color of the start to end
         }
     }
 
