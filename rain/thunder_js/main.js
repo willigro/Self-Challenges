@@ -5,7 +5,9 @@ var maxHeight = window.innerHeight
 const fixedSize = 4
 
 var distanceToCenter = 100
-const points = []
+const thunders = []
+var centerPointX = 0
+var centerPointY = 0
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -19,22 +21,20 @@ window.onload = function () {
 
 function init() {
     for (let i = 0, leng = 10; i < leng; i++)
-        points.push(new Point(centerPointX + distanceToCenter, centerPointY + distanceToCenter))
+        thunders.push(new Thunder(centerPointX, 0))
 
-        // use to test
+    // use to test
     // setInterval(function () {
-    //      render()
+    //     render()
     // }, delay);
     render()
 }
 
 function render() {
     drawBackground();
-    contextCanvas.fillStyle = "red";
-    contextCanvas.fillRect(centerPointX, centerPointY, fixedSize, fixedSize);
-    for (p of points) {
-        p.update();
-        p.draw();
+
+    for (t of thunders) {
+        t.updateAndDraw();
     }
     // comment when in test
     requestAnimationFrame(render)
@@ -50,35 +50,20 @@ function random(limit) {
     return Math.floor(Math.random() * limit)
 }
 
-class Point {
+class Thunder {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.a = this.radians(3)
-        this.sin = Math.sin(this.a)
-        this.cos = Math.cos(this.a)
     }
 
-    update() {
-        this.x += random(3);
-        this.y += random(3);
-        this.x -= centerPointX;
-        this.y -= centerPointY;
+    updateAndDraw() {
+        const vertex = random(20)
+        
+        for (let i = 0; i < vertex; i++) {
+            
+        }
 
-        const xnew = (this.x * this.cos) - (this.y * this.sin);
-        const ynew = (this.x * this.sin) + (this.y * this.cos);
-
-        this.x = xnew + centerPointX;
-        this.y = ynew + centerPointY;
-    }
-
-    draw() {
         contextCanvas.fillStyle = "blue";
         contextCanvas.fillRect(this.x, this.y, fixedSize, fixedSize);
-    }
-
-    radians(degrees) {
-        var pi = Math.PI;
-        return degrees * (pi / 180);
     }
 }
