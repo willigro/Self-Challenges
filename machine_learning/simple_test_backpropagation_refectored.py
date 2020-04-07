@@ -8,6 +8,7 @@ Refactor when confirm that it works
 """
 import random
 import math
+import copy
 
 learning = .1
 loop_time = 5000
@@ -22,6 +23,9 @@ expected_outputs = [0.1, 0]
 weights_from_input = []
 weights_hidden_to_hidden = []
 weights_to_output = []
+
+def log(t, m):
+    print(t, m, end='\n\n')
 
 """
 Activation functions
@@ -52,8 +56,7 @@ Example:    quantity_hidden = 4
                                  [[0, 0], [0, 0]]]
             output            = [[?, ?], [?, ?]]
 """
-def generate_array(qtd_from, qtd_to):
-    list_main = []
+def attach_array(list_main, qtd_from, qtd_to):
     f = 0
     while f < qtd_from:
         t = 0
@@ -66,8 +69,7 @@ def generate_array(qtd_from, qtd_to):
     return list_main
         
 def generate_weights(quantity_hidden, nodes):
-    weights_from_input = generate_array(len(input_layer), nodes)
-    print("weights_from_input", weights_from_input)
+    attach_array(weights_from_input, len(input_layer), nodes)
         
     # First hidden created
     quantity_hidden -= 1
@@ -75,57 +77,41 @@ def generate_weights(quantity_hidden, nodes):
     # Hidden to Hidden
     i = 0
     while i < quantity_hidden: # Hidden lefts
-        n_to = 0
-        arr_layer = []
-        while n_to < nodes:
-            arr = []
-            n = 0
-            #Link all input node to all hidden node
-            while n < nodes:
-                arr.append(random.random())
-                n += 1
-            n_to += 1
-            arr_layer.append(arr)
-        weights_hidden_to_hidden.append(arr_layer)
+        weights_hidden_to_hidden.append(attach_array([], nodes, nodes))
         i += 1
-     
+    
     # Last hidden to output
-    weights_to_output = generate_array(nodes, len(expected_outputs))
-    print("weights_to_output", weights_to_output)
+    attach_array(weights_to_output, nodes, len(expected_outputs))
 
+def execute_foward(arr, inputs, qtd_to, all_weights):
+    t = 0
+    while t < qtd_to:
+        i = 0
+        res = 0
+        while i < len(inputs):
+            res += all_weights[i][t] * inputs[i]
+            i += 1
+        arr.append(sigmoid(res))
+        t += 1
+    return arr
+        
+            
 def feedfoward():
     nodes = len(weights_from_input[0])
-    
-    print("weights_from_input", weights_from_input)
-    
+
     # Input to first hidden layer
     input_to_hidden = []
-    n = 0
-    for inp in input_layer:
-        while n < nodes:
-            res = 0
-            for weights in weights_from_input:
-                res += weights[n] * inp
-            input_to_hidden.append(sigmoid(res))
-            n += 1
+    execute_foward(input_to_hidden, input_layer, nodes, weights_from_input)
         
-    print("input_to_hidden", input_to_hidden)
+#    log("input_to_hidden", input_to_hidden)
     
     # Hidden to hidden
+    inp = input_to_hidden
     hidden_to_hidden = []
-    for layer in weights_hidden_to_hidden:
-        n = 0
-        arr = []
-        for inp in input_to_hidden:
-            while n < nodes:
-                res = 0
-                for weights in layer:
-                    res += weights[n] * inp
-                arr.append(sigmoid(res))
-                n += 1
-        hidden_to_hidden.append(arr)
-        
-    print("hidden_to_hidden", hidden_to_hidden)
+    for weights in weights_hidden_to_hidden:
+        res = execute_foward([], inp, nodes, weights)
+        inp = res
+        hidden_to_hidden.append(res)
     
     # input -> f hidden -> output
     last_hidden = input_to_hidden
@@ -136,69 +122,57 @@ def feedfoward():
     
     # Hidden to output
     hidden_to_output = []
-    n = 0
-    for inp in last_hidden:
-        while n < nodes:
-            res = 0
-            for weights in weights_to_output:
-                res += weights[n] * inp
-            hidden_to_output.append(sigmoid(res))
-            n += 1
+    execute_foward(hidden_to_output, last_hidden, len(expected_outputs), weights_to_output)
     
-    print("hidden_to_output", hidden_to_output)
+    quadratic_average_error(hidden_to_output)
+    return [input_to_hidden, hidden_to_hidden, hidden_to_output]
+
+def quadratic_average_error(outputs):
+    output_quadratic_average_error = 0
+    i = 0
+    sumError = 0
+    while i < len(expected_outputs):
+        sumError += math.pow(expected_outputs[i] - outputs[i], 2)
+        i += 1
     
+    output_quadratic_average_error = sumError / len(expected_outputs)
+    log("error", output_quadratic_average_error)
+
+def backpropagation(inputs, hiddens, outputs):  
+    # Adjust weights from last HIDDEN TO OUTPUT
+    last_hidden = inputs
+    leng = len(hiddens)
+    if leng > 0:
+        last_hidden = hiddens[leng - 1]
+    
+    adjusted_weights_to_output = copy.deepcopy(weights_to_output)
+    out = 0
+    while out < len(expected_outputs):
+        # Total error
+        error = outputs[out] - expected_outputs[out]
+        
+        # Derived from output
+        derived = dsigmoid(outputs[out])
+    
+        # Input from weight that i want adjust
+        link = 0
+        while link < len(adjusted_weights_to_output):
+             r = last_hidden[link] * error * derived * learning
+             adjusted_weights_to_output[link][out] -= r
+             link += 1
+        out += 1
+    
+    # Adjust weights from HIDDEN TO HIDDEN
+
 generate_weights(3, 3)
-#feedfoward()
-    
-#    
-#    """
-#    Quadratic average error
-#    """
-#    
-#    output_quadratic_average_error = 0
-#    i = 0
-#    sumError = 0
-#    while i < len(expected_outputs):
-#        sumError += math.pow(expected_outputs[i] - o[i], 2)
-#        i += 1
-#    
-#    output_quadratic_average_error = sumError / len(expected_outputs)
-#    
-#    if(actual == 0 or actual == loop_time - 1):
-#        print(output_quadratic_average_error)
-#    
+result = feedfoward()
+backpropagation(result[0], result[1], result[2])
 #    """
 #    
 #    BACKPROPAGATION
 #    
 #    """
-#    
-#    """
-#    Adjust weights from last hidden to OUTPUT
-#    """
-#    
-#    new_w_o = []
-#    o_i = 0
-#    while o_i < len(expected_outputs):
-#        i = 0
-#        while i < len(weights_hidden_to_output):
-#            # Total error
-#            error = o[o_i] - expected_outputs[o_i]
-#            
-#            # Derived from output
-#            derived = dsigmoid(o[o_i])
-#        
-#            # Input
-#            inp = h[0]
-#        
-#            r = inp * error * derived * learning
-#            w = weights_hidden_to_output[i] - r
-#    #        print(w_input_to_out, w, expected_outputs[o_i], o[o_i] , error)
-#            
-#            weights_hidden_to_output[i] = w
-#            
-#            i += 1
-#        o_i += 1
+#  
 #    
 #    w_h_i = 0
 #    while w_h_i < len(weights_input_to_hidden[0]):
