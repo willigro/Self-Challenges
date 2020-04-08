@@ -12,9 +12,6 @@ import copy
 
 learning = .1
 loop_time = 5000
-INPUT = 1
-HIDDEN = 2
-OUTPUT = 3
 
 # always one layar
 input_layer = [2, 1]
@@ -24,7 +21,7 @@ weights_from_input = []
 weights_hidden_to_hidden = []
 weights_to_output = []
 
-def log(t, m):
+def log(t = '', m = ''):
     print(t, m, end='\n\n')
 
 """
@@ -95,15 +92,12 @@ def execute_foward(arr, inputs, qtd_to, all_weights):
         t += 1
     return arr
         
-            
 def feedfoward():
     nodes = len(weights_from_input[0])
 
     # Input to first hidden layer
     input_to_hidden = []
     execute_foward(input_to_hidden, input_layer, nodes, weights_from_input)
-        
-#    log("input_to_hidden", input_to_hidden)
     
     # Hidden to hidden
     inp = input_to_hidden
@@ -132,47 +126,84 @@ def quadratic_average_error(outputs):
     i = 0
     sumError = 0
     while i < len(expected_outputs):
-        sumError += math.pow(expected_outputs[i] - outputs[i], 2)
+        sumError += math.pow(outputs[i] - expected_outputs[i], 2)
         i += 1
     
     output_quadratic_average_error = sumError / len(expected_outputs)
     log("error", output_quadratic_average_error)
 
-def backpropagation(inputs, hiddens, outputs):  
+def backpropagation(inputs_out, hiddens_out, outputs_out):  
     # Adjust weights from last HIDDEN TO OUTPUT
-    last_hidden = inputs
-    leng = len(hiddens)
-    if leng > 0:
-        last_hidden = hiddens[leng - 1]
+    last_hidden = inputs_out
+    leng_hiddens_out = len(hiddens_out)
+    if leng_hiddens_out > 0:
+        last_hidden = hiddens_out[leng_hiddens_out - 1]
     
     adjusted_weights_to_output = copy.deepcopy(weights_to_output)
+    errors_last_layer = []
+
+    leng_weights = len(adjusted_weights_to_output)
+    leng_outputs = len(expected_outputs)    
     out = 0
-    while out < len(expected_outputs):
+    while out < leng_outputs:
         # Total error
-        error = outputs[out] - expected_outputs[out]
+        error = outputs_out[out] - expected_outputs[out]
+        errors_last_layer.append(error)
         
         # Derived from output
-        derived = dsigmoid(outputs[out])
+        derived = dsigmoid(outputs_out[out])
     
         # Input from weight that i want adjust
         link = 0
-        while link < len(adjusted_weights_to_output):
+        while link < leng_weights:
              r = last_hidden[link] * error * derived * learning
              adjusted_weights_to_output[link][out] -= r
              link += 1
         out += 1
     
     # Adjust weights from HIDDEN TO HIDDEN
+    # the index 0 is connected with input
+    if leng_hiddens_out > 0:
+        layer = len(weights_hidden_to_hidden) - 1
+        nodes = len(weights_hidden_to_hidden[0])
+        links = len(weights_hidden_to_hidden[0][0])
+        adjusted_weights_hidden_to_hidden = copy.deepcopy(weights_hidden_to_hidden)
+#        log("weights_hidden_to_hidden", weights_hidden_to_hidden)
+        first = True
+        while layer > 0:
+            # the actual index is the generated output
+            # the previous index is the input
+            link = 0
+            while link < links:
+                node = 0
+                while node < nodes:
+                    # Using error from OUTPUT
+                    if first:
+                        out = 0
+                        error = 0
+                        while out < len(expected_outputs):
+                            error += (outputs_out[out] - expected_outputs[out]) * dsigmoid(outputs_out[out]) * weights_to_output[node][out]
+                            out += 1
+                    
+                        inp = hiddens_out[layer - 1][node] * dsigmoid(hiddens_out[layer][node])
+                        
+                        res = inp * error
+                        adjusted_weights_hidden_to_hidden[layer][node][link] -= res        
+    #                    log('{} {} {} {}'.format(layer, node, link, error))
+                    # Using error from HIDDEN
+                    else:
+                        print("new")
+                    node += 1
+                link += 1
+            first = False
+            layer -= 1
+        
+#        log("adjusted_weights_hidden_to_hidden", adjusted_weights_hidden_to_hidden)
 
-generate_weights(3, 3)
+generate_weights(4, 3)
 result = feedfoward()
 backpropagation(result[0], result[1], result[2])
-#    """
-#    
-#    BACKPROPAGATION
-#    
-#    """
-#  
+
 #    
 #    w_h_i = 0
 #    while w_h_i < len(weights_input_to_hidden[0]):
