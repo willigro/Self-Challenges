@@ -145,6 +145,11 @@ class Network:
         self.feedfoword(inputs, expected_outputs)
         self.backpropagation()
     
+    def predict(self, inputs, expected_outputs):
+        self.feedfoword(inputs, expected_outputs)
+        log("Inputs", self.inputs[0])
+        log("Output", self.output())
+    
     def feedfoword(self, inputs, expected_outputs):
         leng = len(self.links)
         link = 0
@@ -325,7 +330,7 @@ while train:
 
 log("Executando teste")
 
-log(network.feedfoword([0, 0], [0]))
-log(network.feedfoword([1, 1], [0]))
-log(network.feedfoword([1, 0], [1]))
-log(network.feedfoword([0, 1], [1]))
+network.predict([0, 0], [0])
+network.predict([1, 1], [0])
+network.predict([1, 0], [1])
+network.predict([0, 1], [1])
