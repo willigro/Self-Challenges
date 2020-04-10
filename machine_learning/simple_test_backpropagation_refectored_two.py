@@ -300,11 +300,11 @@ def sigmoid(x):
 def dsigmoid(x):
     return x * (1 - x)
 
-
 inputs = [[1, 1], [1, 0], [0, 1], [0, 0]]
 outputs = [[0], [1], [1], [0]]
-# change the constructor to use the qtd
+
 network = Network(2, 1, [5])
+
 train = True
 t = 0
 while train:
