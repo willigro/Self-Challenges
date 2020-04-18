@@ -20,7 +20,7 @@ window.onload = function () {
 }
 
 function init() {
-    for (let i = 0, leng = 10; i < leng; i++)
+    for (let i = 0, leng = 1; i < leng; i++)
         thunders.push(new Thunder(centerPointX, 0))
 
     // use to test
@@ -54,16 +54,32 @@ class Thunder {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+        const size = random(20)
+        this.dots = []
+
+        for (let i = 0; i < size; i++) {
+            this.dots.push(new Dot())
+        }
     }
 
     updateAndDraw() {
-        const vertex = random(20)
-        
-        for (let i = 0; i < vertex; i++) {
-            
+        for (let d in this.dots) {
+            contextCanvas.fillStyle = "red";
+            contextCanvas.fillRect(d.x, d.y, fixedSize, fixedSize);
         }
 
         contextCanvas.fillStyle = "blue";
         contextCanvas.fillRect(this.x, this.y, fixedSize, fixedSize);
+    }
+}
+
+class Dot {
+    constructor() {
+        this.x = this.generate(maxWidth);
+        this.y = this.generate(maxHeight);
+    }
+
+    generate(val){
+        
     }
 }
