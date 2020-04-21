@@ -27,34 +27,67 @@ class Nodes:
         self.arr = []
         self.f = f
         self.t = t
+        self.activation = None
+        self.dactivation = None
         
     def println(self):
         log(label_type(self.f), label_type(self.t))
         i = 0
         while i < len(self.arr):
-            log("node {}".format(i), self.arr[i])
+            log("node {} {}".format(i, self.activation), self.arr[i])
             i += 1
     
     def println_type(self):
         log(label_type(self.f), label_type(self.t))
         
 class Network:
-    def __init__(self, input_size, output_size, hidden_nodes_size):
+    def __init__(self, show_error = False):
         self.links = []
+        self.input_size = 0
         self.inputs = []
         self.expected_outputs = []
-        self.learning = .1
+        self.learning = .05
         self.outputs_derivate = []
         self.sum_weights = []
         self.bias = []
-        
-        self.generate_weights(input_size, output_size, hidden_nodes_size)
-        self.generate_bias(output_size, hidden_nodes_size)
+        self.show_error = show_error
         
         # temp arrays
-        self.nodes = []
+        self.nodes = None
         self.weights = []
+        self.last_size = 0
 #        self.println()
+    
+    def add(self, t, size, activation = None):
+        if t == INPUT:
+            self.input_size = size
+            
+        elif t == OUTPUT:
+            self.new_layer_weights(HIDDEN, OUTPUT, self.last_size, size)
+            self.attachActivation(activation)
+            self.generate_bias(size)
+        
+        else:
+            if len(self.links) == 0:
+                self.new_layer_weights(INPUT, HIDDEN, self.input_size, size)
+            else:
+                self.new_layer_weights(HIDDEN, HIDDEN, self.last_size, size)
+        
+            self.attachActivation(activation)
+            self.generate_bias(size)
+        
+        self.last_size = size
+            
+    def attachActivation(self, activation):
+        if activation == "sigmoid":
+            self.nodes.activation = self.sigmoid
+            self.nodes.dactivation = self.dsigmoid
+        elif activation == "relu":
+            self.nodes.activation = self.relu
+            self.nodes.dactivation = self.drelu
+        elif activation == "lrelu":
+            self.nodes.activation = self.lrelu
+            self.nodes.dactivation = self.dlrelu
     
     def newNodes(self, f, t):        
         self.nodes = Nodes(f, t)
@@ -87,43 +120,13 @@ class Network:
             f += 1
         self.appendNode()
            
-    def generate_bias(self, output_size, nodes = []):
-        i = 1
-        while i < len(self.links):
-            arr = []
-            for n in self.links[i].arr:
-                arr.append(random.random())
-            self.bias.append(arr)
-            i += 1
-        
+    def generate_bias(self, nodes):
         i = 0
         arr = []
-        while i < output_size:
+        while i < nodes:
             arr.append(random.random())
             i += 1
         self.bias.append(arr)
-        
-    def generate_weights(self, input_size, output_size, nodes = []):
-        quantity_hidden = len(nodes) - 1
-        
-        self.new_layer_weights(INPUT, HIDDEN, input_size, nodes[0])
-        
-        leng = len(nodes)
-        if leng == 1:
-            i = 0
-            while i < quantity_hidden:
-                self.new_layer_weights(HIDDEN, HIDDEN, nodes[0], nodes[0])
-                i += 1
-        else:
-            if quantity_hidden + 1 != leng:
-                raise ValueError('Hidden quantity must be equals to nodes size.')
-            
-            i = 0
-            while i < quantity_hidden:
-                self.new_layer_weights(HIDDEN, HIDDEN, nodes[i], nodes[i + 1])
-                i += 1
-        
-        self.new_layer_weights(HIDDEN, OUTPUT, nodes[leng - 1], output_size)
         
     def clear_vars(self):
         self.sum_weights = []
@@ -146,7 +149,7 @@ class Network:
     
     def predict(self, inputs, expected_outputs):
         self.feedfoword(inputs, expected_outputs)
-        log("Inputs", self.inputs[0])
+#        log("Inputs", self.inputs[0])
         log("Output", self.output())
     
     def feedfoword(self, inputs, expected_outputs):
@@ -172,7 +175,9 @@ class Network:
                     res += self.inputs[link][inp] * self.links[link].arr[inp][out]
                     inp += 1
                 
-                self.inputs[len(self.inputs) - 1].append(sigmoid(res + self.bias[link][out]))
+                res = self.links[link].activation(res + self.bias[link][out])
+                
+                self.inputs[len(self.inputs) - 1].append(res)
                 
                 out += 1
             link += 1
@@ -213,7 +218,7 @@ class Network:
                 
                 output = 0
                 while output < out_len:
-                    output_derivate = dsigmoid(self.inputs[link_out][output])
+                    output_derivate = self.links[link].dactivation(self.inputs[link_out][output])
                     self.outputs_derivate[link].append(output_derivate)
                     output += 1
                 
@@ -234,7 +239,7 @@ class Network:
                 out_len = len(self.inputs[link_out])
                 output = 0
                 while output < out_len:
-                    output_derivate = dsigmoid(self.inputs[link_out][output])
+                    output_derivate = self.links[link].dactivation(self.inputs[link_out][output])
                     self.outputs_derivate[link].append(output_derivate)
                     output += 1
                 
@@ -255,7 +260,15 @@ class Network:
         self.links = copy.deepcopy(links_copy)
         self.bias = copy.deepcopy(bias_copy)
      
-    def output(self): 
+    def output(self):
+        if self.show_error:
+            e = 0
+            i = 0
+            while i < len(self.expected_outputs):
+                e += self.inputs[len(self.inputs) - 1][i] - self.expected_outputs[i]
+                i += 1
+                
+            log("Error", e)
         return self.inputs[len(self.inputs) - 1]
         
     def multiplication_sum_weights(self, link):
@@ -275,6 +288,24 @@ class Network:
             actual_link -= 1
         return d
     
+    def sigmoid(self, x):
+      return 1 / (1 + math.exp(-x))
+    
+    def dsigmoid(self, x):
+        return x * (1 - x)
+        
+    def relu(self, x, alpha = 0.01):
+       return np.maximum(alpha * x, x)
+    
+    def drelu(self, x, alpha = 0.01):
+        return 1 if x > 0 else 0
+    
+    def lrelu(self, x):
+       return np.tanh(x) 
+    
+    def dlrelu(self, x):
+        return 1 - x**2
+    
     def println(self):
         log("INPUTS")
         i = 0
@@ -284,7 +315,12 @@ class Network:
             
         for w in self.links:
             w.println()
-            
+        
+        log("BIAS")
+        while i < len(self.bias):
+            log("bias {}".format(i), self.bias[i])
+            i += 1
+        
         log("EXPECTED OUTPUTS")
         i = 0
         while i < len(self.expected_outputs):
@@ -293,26 +329,6 @@ class Network:
         
 def log(t = '', m = ''):
     print(t, m, end='\n\n')
-
-#def sigmoid(x):
-#  return 1 / (1 + math.exp(-x))
-#
-#def dsigmoid(x):
-#    return x * (1 - x)
-    
-#def sigmoid(x, alpha = 0.01):
-#   # Return the activation signal
-#   return np.maximum(alpha * x, x)
-#
-#def dsigmoid(x, alpha = 0.01):
-#    return 1 if x > 0 else 0
-
-def sigmoid(x):
-   # Return the activation signal
-   return np.tanh(x) 
-
-def dsigmoid(x):
-    return 1 - x**2
     
 class SpatialFiltering:
     def filterImage(self, image, kernel, imageSize):
@@ -407,17 +423,28 @@ while i <= 6:
     i += 1
 
 """
-Posso fazer mais teste, mas agora nao
-Funcionou com o two e black
-15, 1, 3 / 15, 1, 2 / 3, 1, 3
-usando o leaky relu
-""" 
-"""
-Proxima etapa agora é pegar construir os nodes com funçoes de ativacao diferente
-ou seja, vou ter de refazer a inicializacao e chamada das ativacoes
-"""
+Para o TWO e THREE é provavel que necessite de mais casos de testes, 
+apenas 6 não esta conseguindo generalizar, utilizando apenas um deles
+a rede consegui identificar, reforçando que funciona
 
-network = Network(INPUT_SIZE * INPUT_SIZE, 1, [5, 10])
+Funcionou com o TWO e BLACK utilizando os seguintes parametros:
+
+network.add(INPUT, INPUT_SIZE * INPUT_SIZE)
+network.add(HIDDEN, 3, "lrelu")
+network.add(HIDDEN, 1, "lrelu")
+network.add(OUTPUT, 3, "lrelu")
+
+network.add(INPUT, INPUT_SIZE * INPUT_SIZE)
+network.add(HIDDEN, 3, "lrelu")
+network.add(OUTPUT, 2, "sigmoid")
+""" 
+
+network = Network(True)
+network.add(INPUT, INPUT_SIZE * INPUT_SIZE)
+network.add(HIDDEN, 5, "sigmoid")
+network.add(HIDDEN, 3, "lrelu")
+network.add(OUTPUT, 10, "lrelu")
+#network.println()
 
 #log(inputs)
 #log(outputs)
