@@ -28,32 +28,32 @@ window.onload = function () {
 function init() {
     cell_height = maxHeight / ROWS
     cell_width = maxWidth / COLS
+    contextCanvas.textAlign = "center"
+    contextCanvas.font = "15px Arial"
 
     // a star
     startGrid(cell_width, cell_height)
+    findPath()
     interval = setInterval(function () {
-        detectNeighbour()
+        findPath()
         render()
-        if (isGoal()) {
-            clearInterval(interval)
+        if (isEnd()) {
             drawPath()
+            clearInterval(interval)
         }
     }, DELAY);
 }
 
 function render() {
-    contextCanvas.textAlign = "center"
-    contextCanvas.font = "15px Arial"
-
     drawBackground()
     drawGrid()
 
-    drawGoalNode()
     drawNeighbourNodes()
+    drawClosedNodes()
+    drawGoalNode()
     drawCurrentNode()
     drawInitialNode()
-    drawClosedNodes()
-
+    
     drawAllCosts()
     drawLockeds()
 }
@@ -74,6 +74,7 @@ function drawClosedNodes() {
 
 function drawPath() {
     contextCanvas.fillStyle = PATH_COLOR;
+    console.log(PATH)
     for (let i in PATH) {
         drawNode(PATH[i])
     }
@@ -100,7 +101,6 @@ function drawGoalNode() {
 function drawCurrentNode() {
     contextCanvas.fillStyle = CURRENT_COLOR;
     drawNode(currentNode)
-    drawNodeCosts(currentNode)
 }
 
 function drawNeighbourNodes() {
