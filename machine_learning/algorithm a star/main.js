@@ -54,7 +54,7 @@ function render() {
     drawCurrentNode()
     drawInitialNode()
     
-    drawAllCosts()
+    // drawAllCosts()
     drawLockeds()
 }
 
