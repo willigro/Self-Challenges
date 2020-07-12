@@ -1,0 +1,36 @@
+Objetcs
+    - dino
+    - tree
+    - clound
+
+Moves
+    - jump
+    - turn down
+
+Animations and draw
+    - move trees
+    - move clounds
+    - jump
+    - turn down
+
+Game states
+    - init play
+    - in game
+    - die
+
+Genetic
+    - generate X dino
+    - random your neural network
+    - select the best dino
+    - copy the best and randomize he
+
+Neural network
+    - define network
+    - how the network is a random network, i don't will create a way to improve
+    - select variables to input
+        - distance to clound
+        - distance to tree
+        - actual position x, y
+        - speed
+    - define the bias
+    - define the activation function 
