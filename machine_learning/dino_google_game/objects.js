@@ -1,10 +1,9 @@
 const BASE_X_POSITION = 50
-const BASE_Y_POSTITION = 200
-const BASE_SPEED = 5
+const BASE_Y_POSTITION = 400
+const BASE_SPEED = 8
 const DINO_HEIGHT = 30
 
 var _game_speed = BASE_SPEED
-var INITIAL_X_ENEMY = 0
 
 class Dino {
     constructor() {
@@ -20,7 +19,7 @@ class Dino {
         this.isJumping = false;
         this.jumpForce = 10
         this.gravityForce = 5
-        this.limitHeightInJump = 100
+        this.limitHeightInJump = BASE_Y_POSTITION - 100
 
         this.isDown = false
 
@@ -74,6 +73,7 @@ class Dino {
     jump() {
         if (this.isGround) {
             this.isJumping = true
+            this.turnUp()
             this.isGround = false
         }
     }
@@ -82,7 +82,7 @@ class Dino {
         if (!this.isGround) return
 
         if (this.isDown) {
-            this.y -= this.height
+            this.y = BASE_Y_POSTITION
             this.height = DINO_HEIGHT
             this.isDown = false
         }
@@ -127,8 +127,9 @@ class Dino {
     }
 
     log() {
-        this.brain.log()
-        console.log("score", this.score)
+        // this.brain.log()
+        // console.log("score", this.score)
+        // console.log(this.x, this.y)
     }
 
     random_rgba() {
@@ -138,8 +139,8 @@ class Dino {
 }
 
 class Tree {
-    constructor() {
-        this.x = INITIAL_X_ENEMY;
+    constructor(x) {
+        this.x = x
         this.y = BASE_Y_POSTITION;
         this.width = 30
         this.height = 30
@@ -148,10 +149,6 @@ class Tree {
     }
 
     update() {
-        if (this.outMap()) {
-            this.x = INITIAL_X_ENEMY
-        }
-
         if (!this.isShowing) return
 
         this.x -= _game_speed
@@ -163,20 +160,17 @@ class Tree {
 }
 
 class Clound {
-    constructor() {
-        this.x = INITIAL_X_ENEMY + (INITIAL_X_ENEMY / 2);
+    constructor(x) {
+        this.x = x
         this.y = BASE_Y_POSTITION - 80;
         this.width = 30
         this.height = 90
 
         this.isShowing = true;
+        console.log(this.x)
     }
 
     update() {
-        if (this.outMap()) {
-            this.x = INITIAL_X_ENEMY
-        }
-
         if (!this.isShowing) return
 
         this.x -= _game_speed

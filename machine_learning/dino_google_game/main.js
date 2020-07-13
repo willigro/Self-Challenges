@@ -1,11 +1,12 @@
-const DELAY = 1000 / 100
+var DELAY = 1000 / 100
 var interval
 var contextCanvas
 var maxWidth = window.innerWidth
 var maxHeight = window.innerHeight
 
-const DINO_POPULATION = 500 // 1000 conseguiu
+const DINO_POPULATION = 100 // 1000 conseguiu
 const ERAS = 20
+const MAX_SPEED = 15
 
 const _genetic = new Genetic()
 var actualEra = 1
@@ -14,8 +15,11 @@ var dinoList = []
 var trees = []
 var clounds = []
 var score_to_speed = 0
-var toNexSpeed = 300
-var baseMultipleToNextSpeed = 2
+var to_next_speed = 300
+var base_multiple_to_next_speed = 2
+
+var score_to_tree = 0
+var score_to_clound = 0
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -24,7 +28,6 @@ window.onload = function () {
     contextCanvas = canvas.getContext("2d");
 
     _draw = new Draw(contextCanvas)
-    INITIAL_X_ENEMY = maxWidth
     initialDinos()
     initGame()
 }
@@ -46,18 +49,19 @@ function initialDinos() {
 function prepareEnemyObjects() {
     _game_speed = BASE_SPEED
     score_to_speed = 0
+    score_to_tree = 0
 
     trees = []
-    trees.push(new Tree())
-
     clounds = []
-    clounds.push(new Clound())
 }
 
 function update() {
     score_to_speed++
 
-    for (let i in trees) {
+    handleTrees()
+    // handleClounds()
+
+    for (let i = 0; i < trees.length; i++) {
         trees[i].update(score_to_speed)
     }
 
@@ -110,11 +114,71 @@ function update() {
     }
 }
 
+function handleTrees() {
+    score_to_tree++
+
+    for (let i = 0; i < trees.length; i++) {
+        const t = trees[i]
+        if (t.outMap()) {
+            trees.splice(i, 1)
+            i--
+        }
+    }
+
+    if (trees.length == 0) {
+        var lastClound
+        for (let c in clounds) {
+            lastClound = clounds[c]
+        }
+        if (lastClound) {
+            trees.push(new Tree())
+        } else {
+            trees.push(new Tree(maxWidth))
+        }
+        // if (score_to_tree >= 500) {
+        //     trees.push(new Tree(trees[0].width + trees[0].x + 1))
+
+        //     if (score_to_tree >= 1000) {
+        //         score_to_tree = 0
+        //         trees.push(new Tree(trees[1].width + trees[1].x + 1))
+        //     }
+        // }
+        // console.log(trees.length, score_to_tree)
+    }
+}
+
+function handleClounds() {
+    score_to_clound++
+
+    for (let i = 0; i < clounds.length; i++) {
+        const t = clounds[i]
+        if (t.outMap()) {
+            clounds.splice(i, 1)
+            i--
+        }
+    }
+
+    if (clounds.length == 0) {
+        const x = (trees.length > 0) ? trees[0].x : maxWidth
+
+        clounds.push(new Clound(x))
+        if (score_to_clound >= 1000) {
+            clounds.push(new Clound(clounds[0].width + clounds[0].x + 1))
+
+            if (score_to_clound >= 2000) {
+                score_to_clound = 0
+                clounds.push(new Clound(clounds[1].width + clounds[1].x + 1))
+            }
+        }
+    }
+}
+
 function tryUpSpeed() {
-    if (_game_speed < 10 && score_to_speed > toNexSpeed) {
+    if (_game_speed < MAX_SPEED && score_to_speed > to_next_speed) {
         _game_speed++
-        toNexSpeed *= baseMultipleToNextSpeed
-        baseMultipleToNextSpeed -= .1
+        to_next_speed *= base_multiple_to_next_speed
+        if (base_multiple_to_next_speed > 1.5)
+            base_multiple_to_next_speed -= .1
         console.log(_game_speed)
     }
 }
@@ -145,8 +209,6 @@ function newEra() {
     stopGame()
     if (actualEra <= ERAS) {
         dinoList = _genetic.envolve(dinoList)
-    } else {
-        console.log("best", _genetic.best)
     }
     initGame()
 }

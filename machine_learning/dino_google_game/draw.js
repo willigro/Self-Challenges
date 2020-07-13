@@ -44,4 +44,6 @@ class Draw {
             this.ctx.fillRect(clound.x, clound.y, clound.width, clound.height)
         }
     }
+
+    
 }

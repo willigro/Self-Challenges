@@ -94,6 +94,7 @@ class Genetic {
     constructor() {
         this.best = null
     }
+
     envolve(dinos) {
         this.best = null
         for (let i in dinos) {
