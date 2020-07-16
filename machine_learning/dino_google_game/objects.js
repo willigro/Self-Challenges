@@ -1,10 +1,3 @@
-const BASE_X_POSITION = 50
-const BASE_Y_POSTITION = 400
-const BASE_SPEED = 8
-const DINO_HEIGHT = 30
-
-var _game_speed = BASE_SPEED
-
 class Dino {
     constructor() {
         this.x = BASE_X_POSITION;
@@ -26,8 +19,8 @@ class Dino {
         this.brain = new Brain()
     }
 
-    copy(dino) {
-        this.brain.copy(dino.brain)
+    copy(dino, keep) {
+        this.brain.copy(dino.brain, keep)
     }
 
     update() {
@@ -40,11 +33,14 @@ class Dino {
         this.gravity()
     }
 
-    predict(nextTree, nextClound) {
+    predict(nextObstacle) {
         if (!this.isAlive) return
-        if (nextTree) {
-            const cloundY = (nextClound) ? nextClound.y : this.y
-            const outputs = this.brain.predict([this.distance(nextTree)], [this.distance(nextClound)], this.y, cloundY)
+        if (nextObstacle) {
+            const outputs = this.brain.predict(
+                [this.distance(nextObstacle),
+                nextObstacle.width,
+                nextObstacle.height,
+                    _game_speed])
 
             if (outputs[0] > 0) {
                 this.jump()
@@ -59,11 +55,16 @@ class Dino {
     }
 
     isColiding(object) {
-        if (this.x >= object.x + object.width || object.x >= this.x + this.width) return false;
+        if (!object) return false
+        object = object[0]
 
-        if (this.y >= object.y + object.height || object.y >= this.y + this.height) return false;
+        // has horizontal gap
+        if (this.x > object.x + object.width || object.x > this.x + this.width) return false;
 
-        return true;
+        // has vertical gap
+        if (this.y > object.y + object.height || object.y > this.y + this.height) return false;
+
+        return true
     }
 
     die() {
@@ -139,13 +140,14 @@ class Dino {
 }
 
 class Tree {
-    constructor(x) {
+    constructor(x, width) {
         this.x = x
         this.y = BASE_Y_POSTITION;
-        this.width = 30
+        this.width = width
         this.height = 30
 
         this.isShowing = true;
+        this.tag = TREE_TAG
     }
 
     update() {
@@ -155,7 +157,11 @@ class Tree {
     }
 
     outMap() {
-        return this.x + this.width < 0
+        return !this.x || this.x + this.width < 0
+    }
+
+    getRight(){
+        return this.x + this.width
     }
 }
 
@@ -167,7 +173,7 @@ class Clound {
         this.height = 90
 
         this.isShowing = true;
-        console.log(this.x)
+        this.tag = CLOUND_TAG
     }
 
     update() {
@@ -177,6 +183,10 @@ class Clound {
     }
 
     outMap() {
-        return this.x + this.width < 0
+        return !this.x || this.x + this.width < 0
+    }
+    
+    getRight(){
+        return this.x + this.width
     }
 }
