@@ -23,6 +23,7 @@ var _game_speed = BASE_SPEED
 var score_to_tree = 0
 var object_score = 0
 var can_make_clound = false
+var plane_score = 0
 
 var best_dino = null
 var global_best_dino = null
@@ -129,6 +130,7 @@ function update() {
 
 function generateObstacles() {
     object_score++
+    // plane_score++
 
     var removed = false
     for (let i = 0; i < obstacles.length; i++) {
@@ -153,6 +155,7 @@ function generateObstacles() {
             obstacles.push(new Tree(distance, OBJECT_WIDTH * random(2)))
 
         if (object_score >= 500) {
+            object_score = (_game_speed > 10) ? 200 : 0
             can_make_clound = true
             const d = obstacles[obstacles.length - 1].getRight() + getDistanceObstacle()
             if (Math.random() > .3)
@@ -160,6 +163,12 @@ function generateObstacles() {
             else
                 obstacles.push(new Clound(d, OBJECT_WIDTH * random(4)))
         }
+
+        // if(plane_score >= 9000){
+        //     plane_score = 0
+        //     const d = obstacles[obstacles.length - 1].getRight() + getDistanceObstacle()
+        //     obstacles.push(new Tree(d, OBJECT_WIDTH * 15))
+        // }
     }
 }
 
