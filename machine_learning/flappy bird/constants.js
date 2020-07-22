@@ -1,0 +1,20 @@
+const DELAY = 1000 / 100
+const MAX_WIDTH = window.innerWidth
+const MAX_HEIGHT = window.innerHeight
+
+const MAX_SPEED = 13
+const BASE_SPEED = 8
+
+const DISTANCE_BETWEEN_PIPE = MAX_WIDTH / 4
+const BIRD_HEIGHT = 30
+const BRAIN_BLOCK_SIZE = 10
+const OBJECT_WIDTH = 50
+
+const POPULATION = 1000
+const ERAS = 15
+
+const BASE_X_POSITION_INFO = 150
+const BASE_Y_POSITION_INFO = 100
+const BASE_X_POSITION_BRAIN = MAX_WIDTH / 2
+const BASE_Y_POSITION = MAX_HEIGHT / 2
+const BASE_X_POSITION = 150
