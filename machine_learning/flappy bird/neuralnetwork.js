@@ -2,15 +2,23 @@ class Brain {
     constructor() {
         this.inputLayer = []
         this.hiddenLayer = []
+        this.hiddenLayer2 = []
         this.outputLayer = []
-        this.bias = 1
-        this.chanceToChange = .4
+        this.bias = []
+        this.chanceToChange = .3
 
         this.resultInput
         this.resultHidden
+        this.resultHidden2
         this.resultOutput
 
+        this.learningRate = 0.03
+
         for (let i = 0; i < 3; i++) {
+            this.bias.push(this.newBias())
+        }
+
+        for (let i = 0; i < 2; i++) {
             this.inputLayer.push(this.random())
         }
 
@@ -23,42 +31,51 @@ class Brain {
         }
     }
 
+    newBias() {
+        return Math.random() > .5 ? 1 : 0
+        // return 1
+    }
+
     log() {
-        console.log("hidden", this.hiddenLayer)
-        console.log("output", this.outputLayer)
+        console.log("inputLayer", this.inputLayer)
+        console.log("hiddenLayer", this.hiddenLayer)
+        console.log("outputLayer", this.outputLayer)
     }
 
     copy(brain, keep) {
+        if (!keep) {
+            for (let i in this.bias) {
+                this.bias[i] = this.newBias()
+            }
+        }
         this.inputLayer = brain.inputLayer.slice()
-        for (let i in this.inputLayer) {
-            if (!keep && Math.random() < this.chanceToChange) {
-                this.inputLayer[i] = this.random()
-            }
-        }
-
         this.hiddenLayer = brain.hiddenLayer.slice()
-        for (let i in this.hiddenLayer) {
-            if (!keep && Math.random() < this.chanceToChange) {
-                this.hiddenLayer[i] = this.random()
-            }
+        this.outputLayer = brain.outputLayer.slice()
+
+        if (keep) return
+
+        for (let i in this.inputLayer) {
+            this.inputLayer[i] = this.newWeight(this.inputLayer[i])
         }
 
-        this.outputLayer = brain.outputLayer.slice()
+        for (let i in this.hiddenLayer) {
+            this.hiddenLayer[i] = this.newWeight(this.hiddenLayer[i])
+        }
+
         for (let i in this.outputLayer) {
-            if (!keep && Math.random() < this.chanceToChange) {
-                this.outputLayer[i] = this.random()
-            }
+            this.outputLayer[i] = this.newWeight(this.outputLayer[i])
         }
     }
 
     predict(input) {
+        // console.log(input)
         this.resultInput = []
         for (let h in this.inputLayer) {
             let sum = 0
             for (let i in input) {
                 sum += input[i] * this.inputLayer[h]
             }
-            this.resultInput.push(this.activation(sum + this.bias))
+            this.resultInput.push(this.activation(sum + this.bias[0]))
         }
 
         this.resultHidden = []
@@ -67,9 +84,8 @@ class Brain {
             for (let i in this.resultInput) {
                 sum += this.resultInput[i] * this.hiddenLayer[h]
             }
-            this.resultHidden.push(this.activation(sum + this.bias))
+            this.resultHidden.push(this.activation(sum + this.bias[1]))
         }
-        // console.log("result", result)
 
         this.resultOutput = []
         for (let o in this.outputLayer) {
@@ -77,15 +93,22 @@ class Brain {
             for (let r in this.resultHidden) {
                 sum += this.resultHidden[r] * this.outputLayer[o]
             }
-            this.resultOutput.push(this.activation(sum + this.bias))
+            this.resultOutput.push(this.activation(sum + this.bias[2]))
         }
-        // console.log("outputs", this.resultOutput)
+
         return this.resultOutput
     }
 
     activation(x) {
+        // return x
         return ((x < 0) ? 0 : x);
         // return 1 / (1 + Math.exp(-x))
+    }
+
+    newWeight(x) {
+        // return Math.random() > .5 ? x - this.learningRate : x + this.learningRate
+        // return x - this.learningRate
+        return this.random()
     }
 
     random() {

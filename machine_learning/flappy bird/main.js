@@ -22,6 +22,8 @@ var _game_speed = BASE_SPEED
 var best = null
 var global_best = null
 var alives = 0
+var next
+var upArrowClicked = false
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -62,7 +64,6 @@ function update() {
     _obstacle.update(score_to_speed)
 
     var bird
-    var next
     var isBest
     alives = 0
     for (let i in birdList) {
@@ -74,19 +75,24 @@ function update() {
             isBest = true
         }
 
+        // if(upArrowClicked){
+        //     bird.turnToJump()
+        //     upArrowClicked = false
+        // }
+
         bird.update()
 
         if (bird.isAlive) {
             alives++
 
             next = _obstacle.getNextFromObstacles(bird)
-
             if (bird.isColiding(next))
                 bird.die()
-            else
+            else {
                 if (next) {
-                    bird.predict(next[0])
+                    bird.predict(_obstacle.spaceBetween(next))
                 }
+            }
         }
     }
 
@@ -101,6 +107,8 @@ function update() {
     if (allDie) {
         newEra()
     }
+
+    // best.brain.log()
 }
 
 function tryUpSpeed() {
@@ -116,9 +124,13 @@ function random(random) {
 
 function render() {
     _draw.drawBackground(MAX_WIDTH, MAX_HEIGHT)
-    _draw.drawBirds(birdList)
-    _draw.drawObstacles(_obstacle.obstacles)
-    _draw.drawBestDinoInfo(best, global_best, _obstacle.getNextFromObstacles(best), alives)
+    _draw.drawGameArea();
+    _draw.drawBestDinoInfo(best, global_best, alives)
+    if (DRAW) {
+        _draw.drawBirds(birdList)
+        _draw.drawObstacles(_obstacle.obstacles)
+        _draw.drawObstacle(_obstacle.spaceBetween(next), "blue")
+    }
 }
 
 function newEra() {
@@ -136,4 +148,15 @@ function newEra() {
 
 function stopGame() {
     clearInterval(interval)
+}
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        upArrowClicked = true
+    }
 }

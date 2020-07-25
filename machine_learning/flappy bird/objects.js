@@ -9,9 +9,10 @@ class Bird {
 
         this.score = 0
 
+        this.turnsJumping = 0
         this.isJumping = false;
-        this.jumpForce = 10
-        this.gravityForce = 5
+        this.jumpForce = 8
+        this.gravityForce = 6
 
         this.isDown = false
 
@@ -26,36 +27,48 @@ class Bird {
         if (!this.isAlive) return
         this.score += BASE_SPEED
 
-        this.handleJump()
-        this.gravity()
+
+        if (this.isJumping)
+            this.handleJump()
+        else
+            this.gravity()
 
         if (this.y >= MAX_HEIGHT)
             this.die()
     }
 
-    predict(nextObstacle) {
+    predict(betweenSpace) {
         if (!this.isAlive) return
-        if (nextObstacle) {
-            const outputs = this.brain.predict(
-                [this.distance(nextObstacle), _game_speed])
+        if (betweenSpace) {
+            const outputs = this.brain.predict([
+                betweenSpace.y - this.y
+                , betweenSpace.x - this.x
+                // , this.y
+                // , this.isJumping ? this.jumpForce : -this.gravityForce
+                // , betweenSpace.middleY()
+                // , this.distanceToMiddle(betweenSpace)
+            ])
 
-            if (outputs[0] > 0) {
+            if (outputs[0] == 0) {
                 this.turnToJump()
             }
         }
     }
 
-    isColiding(object) {
-        if (!object) return false
-        object = object[0]
+    isColiding(objects) {
+        if (!objects) return false
+        for (let i in objects) {
+            const object = objects[i]
 
-        // has horizontal gap
-        if (this.x > object.x + object.width || object.x > this.x + this.width) return false;
+            // has horizontal gap
+            if (this.x > object.x + object.width || object.x > this.x + this.width) continue;
 
-        // has vertical gap
-        if (this.y > object.y + object.height || object.y > this.y + this.height) return false;
+            // has vertical gap
+            if (this.y > object.y + object.height || object.y > this.y + this.height) continue;
 
-        return true
+            return true
+        }
+        return false;
     }
 
     die() {
@@ -64,6 +77,7 @@ class Bird {
 
     turnToJump() {
         this.isJumping = true
+        this.turnsJumping = 0
     }
 
     gravity() {
@@ -71,19 +85,31 @@ class Bird {
     }
 
     handleJump() {
-        if (this.isJumping) {
-            this.y -= this.jumpForce
-            if (this.y < BASE_Y_POSITION) {
-                this.y = BASE_Y_POSITION
-            }
-            this.isJumping = false
+        this.y -= this.jumpForce
+        if (this.y < BASE_Y_POSITION) {
+            this.y = BASE_Y_POSITION
+            // this.die()
         }
+
+        if (this.turnsJumping == 8) {
+            this.isJumping = false
+            this.turnsJumping = 0
+        }
+        this.turnsJumping++
     }
 
     distance(object) {
         if (object)
             return Math.sqrt(
                 Math.pow(object.x - this.x, 2) + Math.pow(object.y - this.y, 2)
+            )
+        return 0
+    }
+
+    distanceToMiddle(object) {
+        if (object)
+            return Math.sqrt(
+                Math.pow(object.x - this.x, 2) + Math.pow(object.middleY() - this.y, 2)
             )
         return 0
     }
@@ -108,6 +134,14 @@ class Pipe {
         this.height = height
 
         this.isShowing = true;
+    }
+
+    middleX() {
+        return this.x + (this.width / 2)
+    }
+
+    middleY() {
+        return this.y + (this.height / 2)
     }
 
     update() {

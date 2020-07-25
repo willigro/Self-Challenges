@@ -9,41 +9,48 @@ class Draw {
         this.ctx.fillRect(0, 0, MAX_WIDTH, MAX_HEIGHT);
     }
 
+    drawGameArea() {
+        this.ctx.strokeRect(0, BASE_Y_POSITION, MAX_WIDTH, MAX_HEIGHT - BASE_Y_POSITION);
+    }
+
     drawBirds(birds) {
         var bird
+        this.ctx.strokeStyle = "black"
         for (let i in birds) {
             bird = birds[i];
 
             if (!bird.isAlive) continue
 
+            this.ctx.beginPath();
             this.ctx.fillStyle = bird.color
-            this.ctx.fillRect(bird.x, bird.y, bird.width, bird.height)
+            this.ctx.rect(bird.x, bird.y, bird.width, bird.height)
+            this.ctx.fill()
+            this.ctx.stroke()
         }
     }
 
     drawObstacles(obstacles) {
-        var obst
         for (let i in obstacles) {
-            obst = obstacles[i];
-
-            if (!obst.isShowing) continue
-
-            this.ctx.fillStyle = "black"
-            this.ctx.fillRect(obst.x, obst.y, obst.width, obst.height)
+            this.drawObstacle(obstacles[i][0])
+            this.drawObstacle(obstacles[i][1])
         }
     }
 
-    drawBestDinoInfo(best, global_best, next_obstacle, alives) {
+    drawObstacle(obst, color) {
+        if (!obst.isShowing) return
+
+        this.ctx.fillStyle = (color) ? color : "black"
+        this.ctx.fillRect(obst.x, obst.y, obst.width, obst.height)
+    }
+
+    drawBestDinoInfo(best, global_best, alives) {
         contextCanvas.font = "22px Arial"
         this.drawText("Era atual: " + actualEra + " Restantes: " + alives, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO)
 
         if (global_best)
             this.drawText("Melhor de tudinho: " + global_best.score, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO + 25)
 
-        if (next_obstacle)
-            this.drawText("Proximo obstaculo: " + next_obstacle[0].tag, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO + 75)
-
-        this.drawText("Vel: " + _game_speed, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO + 100)
+        this.drawText("Vel: " + _game_speed, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO + 75)
 
         if (best) {
             this.drawText("Bonzinho: " + best.score, BASE_X_POSITION_INFO, BASE_Y_POSITION_INFO + 50)
