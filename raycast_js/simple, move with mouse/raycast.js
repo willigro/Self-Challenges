@@ -29,8 +29,8 @@ window.onload = function () {
 }
 
 function onMouseMove(event) {
-    particle.x = event.screenX
-    particle.y = event.screenY
+    particle.x = event.pageX
+    particle.y = event.pageY
 }
 
 function init() {
