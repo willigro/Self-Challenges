@@ -23,7 +23,7 @@ class Draw {
 
     drawObstacles(obstacles) {
         var obst
-        for(let i in obstacles){
+        for (let i in obstacles) {
             obst = obstacles[i];
 
             if (!obst.isShowing) continue
@@ -33,33 +33,9 @@ class Draw {
         }
     }
 
-    drawTrees(trees) {
-        var tree
-        for (let i in trees) {
-            tree = trees[i];
-
-            if (!tree.isShowing) continue
-
-            this.ctx.fillStyle = "gray"
-            this.ctx.fillRect(tree.x, tree.y, tree.width, tree.height)
-        }
-    }
-
-    drawClounds(clounds) {
-        var clound
-        for (let i in clounds) {
-            clound = clounds[i];
-
-            if (!clound.isShowing) continue
-
-            this.ctx.fillStyle = "black"
-            this.ctx.fillRect(clound.x, clound.y, clound.width, clound.height)
-        }
-    }
-
     drawBestDinoInfo(bestDino, globalDino, next_obstacle, alives) {
         contextCanvas.font = "22px Arial"
-        this.drawText("Era atual: " + actualEra + " Dinos restantes: " + alives, BASE_X_POSITION, BASE_Y_POSITION_INFO)
+        this.drawText("Era atual: " + actualEra + " de " + ERAS + " Dinos restantes: " + alives + " de " + DINO_POPULATION, BASE_X_POSITION, BASE_Y_POSITION_INFO)
 
         if (globalDino)
             this.drawText("Melhor de tudinho: " + globalDino.score, BASE_X_POSITION, BASE_Y_POSITION_INFO + 25)
@@ -67,7 +43,7 @@ class Draw {
         if (next_obstacle)
             this.drawText("Proximo obstaculo: " + next_obstacle[0].tag, BASE_X_POSITION, BASE_Y_POSITION_INFO + 75)
 
-        this.drawText("Vel: " + _game_speed, BASE_X_POSITION, BASE_Y_POSITION_INFO + 100)
+        this.drawText("Vel: " + _game_speed + " de " + MAX_SPEED, BASE_X_POSITION, BASE_Y_POSITION_INFO + 100)
 
         if (bestDino) {
             this.drawText("Bonzinho: " + bestDino.score, BASE_X_POSITION, BASE_Y_POSITION_INFO + 50)

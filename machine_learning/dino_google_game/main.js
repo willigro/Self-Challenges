@@ -88,15 +88,12 @@ function update() {
 
     var dino
     var next
-    var isBest
     alives = 0
     for (let i in dinoList) {
-        isBest = false
         dino = dinoList[i]
 
         if (best_dino == null || dino.score > best_dino.score) {
             best_dino = dino
-            isBest = true
         }
 
         dino.update()
@@ -150,7 +147,7 @@ function generateObstacles() {
         console.log(distance)
 
         if (can_make_clound && Math.random() < .3)
-            obstacles.push(new Clound(distanc, OBJECT_WIDTH * random(2)))
+            obstacles.push(new Clound(distance, OBJECT_WIDTH * random(2)))
         else
             obstacles.push(new Tree(distance, OBJECT_WIDTH * random(2)))
 
@@ -266,34 +263,6 @@ function getNextObstacle(dino) {
     return null
 }
 
-function getNextTree(dino) {
-    var next = null
-    var tree
-    for (let i in trees) {
-        tree = trees[i]
-        if (tree.x > dino.x) {
-            const d = dino.distance(tree)
-            if (next == null || next[1] > d)
-                next = [tree, d]
-        }
-    }
-    return next
-}
-
-function getNextClound(dino) {
-    var next = null
-    var clound
-    for (let i in clounds) {
-        clound = clounds[i]
-        if (clound.x > dino.x) {
-            const d = dino.distance(clound)
-            if (next == null || next[1] > d)
-                next = [clound, d]
-        }
-    }
-    return next
-}
-
 function random(random) {
     return Math.floor(Math.random() * random + 1)
 }
@@ -301,8 +270,6 @@ function random(random) {
 function render() {
     _draw.drawBackground(MAX_WIDTH, MAX_HEIGHT)
     _draw.drawDinos(dinoList)
-    // _draw.drawTrees(trees)
-    // _draw.drawClounds(clounds)
     _draw.drawObstacles(obstacles)
     _draw.drawBestDinoInfo(best_dino, global_best_dino, getNextFromObstacles(best_dino), alives)
 }
@@ -310,7 +277,7 @@ function render() {
 function newEra() {
     actualEra++
     stopGame()
-    if (actualEra <= ERAS) {
+    if (actualEra < ERAS) {
         dinoList = _genetic.envolve(dinoList)
 
         if (global_best_dino == null || best_dino.score > global_best_dino.score)
