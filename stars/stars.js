@@ -17,7 +17,7 @@ const TURNS_TO_GO_TO_CENTER = 25
 const STAR_MAX_SIZE = 2
 const CLOSE_TO_WALL = 10
 const TO_CLOSE = 100
-const START_COUNT = 1
+const START_COUNT = 1000
 
 const COLOR_BACKGROUND = "black"
 const COLOR_STAR_WHITE = "white"
@@ -30,7 +30,9 @@ const MOVE_STATUS_RUN_AWAY = 1
 const MOVE_STATUS_STOPING = 2
 const MOVE_STATUS_TO_CENTER = 3
 
-window.onload = function () {
+var _blackHole;
+
+window.onload = function() {
     var canvas = document.getElementById("canvas")
     canvas.width = maxWidth
     canvas.height = maxHeight
@@ -52,8 +54,15 @@ function onMouseMove(event) {
     }
 }
 
+function OnMouseDown(event) {
+    if (!_blackHole) return
+    _blackHole.x = event.pageX
+    _blackHole.y = event.pageY
+}
+
 function init() {
-    setInterval(function () {
+    _blackHole = new BlackHole()
+    setInterval(function() {
         drawBackground();
         for (let s of stars) {
             s.update()
@@ -63,8 +72,8 @@ function init() {
 
 function configure() {
     for (var i = 0; i < START_COUNT; i++) {
-        // stars.push(new Star(random(maxWidth), random(maxHeight)))
-        stars.push(new Star(centerX + 100, centerY + 100))
+        stars.push(new Star(random(maxWidth), random(maxHeight)))
+            // stars.push(new Star(centerX + 100, centerY + 3))
     }
 
     maxDistanceToCenter = distance(0, 0, centerX, centerY)
@@ -100,6 +109,14 @@ function valueFromPercentage(percent, totalValue) {
     return percent * totalValue / 100
 }
 
+class BlackHole {
+    constructor() {
+        this.x = centerX
+        this.y = centerY
+        this.m = 1.989 * Math.pow(10, 30)
+    }
+}
+
 class Star {
     constructor(x, y) {
         this.x = x
@@ -107,7 +124,7 @@ class Star {
         this.horizontal = 0
         this.vertical = 0
         this.vel = MIN_VEL
-        this.size = 5//randomNotZero(STAR_MAX_SIZE)
+        this.size = randomNotZero(STAR_MAX_SIZE)
         this.color = this.randomStarColor()
 
         this.moveStatus = MOVE_STATUS_TO_CENTER
@@ -121,6 +138,13 @@ class Star {
         const dY = this.y - centerY;
         this.angle = Math.atan2(dY, dX);
         this.r = this.distance(centerX, centerY)
+
+        this.m = 5.972 * Math.pow(10, 10) // 24 //randomNotZero(50)
+        this.velX = -1
+        this.velY = 0
+        this.dt = Math.random()
+
+        this.g = 6.6742e-11
     }
 
     update() {
@@ -163,62 +187,166 @@ class Star {
     }
 
     move() {
-        this.x += this.horizontal * this.vel
-        this.y += this.vertical * this.vel
-        // if (this.moveStatus == MOVE_STATUS_RUN_AWAY) {
-        //     this.x += this.horizontal * this.vel
-        //     this.y += this.vertical * this.vel
-        // } else {
-        //     // const a = 20
-        //     // console.log(this.a, this.x, this.y)
-        //     // this.x += ((this.a * this.angle) * Math.cos(this.angle)) / centerX
-        //     // this.y += ((this.a * this.angle) * Math.sin(this.angle)) / centerY
+        // this.x += this.horizontal * this.vel
+        // this.y += this.vertical * this.vel
+        if (this.moveStatus == MOVE_STATUS_RUN_AWAY) {
+            this.x += this.horizontal * this.vel
+            this.y += this.vertical * this.vel
+        } else {
+            // const a = 20
+            // console.log(this.a, this.x, this.y)
+            // this.x += ((this.a * this.angle) * Math.cos(this.angle)) / centerX
+            // this.y += ((this.a * this.angle) * Math.sin(this.angle)) / centerY
 
-        //     // this.x -= this.a * this.angle * Math.cos(this.angle + Math.PI) + (Math.random() * centerX) * 0.1
-        //     // this.y -= this.a * this.angle * Math.sin(this.angle + Math.PI) + (Math.random() * centerY) * 0.1
+            // this.x -= this.a * this.angle * Math.cos(this.angle + Math.PI) + (Math.random() * centerX) * 0.1
+            // this.y -= this.a * this.angle * Math.sin(this.angle + Math.PI) + (Math.random() * centerY) * 0.1
 
-        //     // this.x += this.vel * this.horizontal - ((this.a * this.angle) * Math.cos(this.angle) / centerX)
-        //     // this.y += this.vel * this.vertical - ((this.a * this.angle) * Math.sin(this.angle) / centerY)
+            // this.x += this.vel * this.horizontal - ((this.a * this.angle) * Math.cos(this.angle) / centerX)
+            // this.y += this.vel * this.vertical - ((this.a * this.angle) * Math.sin(this.angle) / centerY)
 
-        //     // angle of line between point and center of screen 
-        //     // relative to x-axis
+            // angle of line between point and center of screen 
+            // relative to x-axis
 
 
-        //     // this.x = this.r * Math.cos(this.angle) + centerX;
-        //     // this.y = this.r * Math.sin(this.angle) + centerY;
+            // this.x = this.r * Math.cos(this.angle) + centerX;
+            // this.y = this.r * Math.sin(this.angle) + centerY;
 
-        //     // if (this.r > 0) {
-        //     //     this.r -= this.vel
-        //     //     this.theta += Math.random(); // Increment the angle
-        //     // }
+            // if (this.r > 0) {
+            //     this.r -= this.vel
+            //     this.theta += Math.random(); // Increment the angle
+            // }
 
-        //     // A radius between the gravitating bodies is computed: (1) r=x2+y2+z2−−−−−−−−−−√
-        //     // A gravitational force scalar is computed: (2) f=−GM1M2r2
-        //     // G = Universal gravitational constant
-        //     // M1 = mass of body 1
-        //     // M2 = mass of body 2
-        //     // r = radius obtained from equation (1)
-        //     // A normalized direction vector (or unit vector) is computed to provide a direction for the gravitational force scalar: (3) r^{x,y,z}={x,y,z}x2+y2+z2√
-        //     // The velocity vector is updated by gravitational acceleration multiplied by the unit vector: (4) v⃗ t+1=v⃗ t+r^fΔt
-        //     // The position vector is updated by velocity: (5) p⃗ t+1=p⃗ t+v⃗ t+1Δt
-        //     // The updated position is plotted on an output device and the process is repeated.
+            // A radius between the gravitating bodies is computed: (1) r=x2+y2+z2−−−−−−−−−−√
+            // A gravitational force scalar is computed: (2) f=−GM1M2r2
+            // G = Universal gravitational constant
+            // M1 = mass of body 1
+            // M2 = mass of body 2
+            // r = radius obtained from equation (1)
+            // A normalized direction vector (or unit vector) is computed to provide a direction for the gravitational force scalar: (3) r^{x,y,z}={x,y,z}x2+y2+z2√
+            // The velocity vector is updated by gravitational acceleration multiplied by the unit vector: (4) v⃗ t+1=v⃗ t+r^fΔt
+            // The position vector is updated by velocity: (5) p⃗ t+1=p⃗ t+v⃗ t+1Δt
+            // The updated position is plotted on an output device and the process is repeated.
 
-        //     // const radius = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
-        //     // const radius = this.distance(centerX, centerY)
-        //     // const e = (5.972 * Math.pow(10, 24))
-        //     // const s = (1.989 * Math.pow(10, 30))
-        //     // const r = Math.pow(radius, 2)
-        //     // const g = 6.6742e-11
-        //     // // console.log(e, s, r)
-        //     // const gravit = -(g * e * s / r)
-        //     // // const x = this.x / radius
-        //     // // const y = this.y / radius
-        //     // // const vel = this.vel * ACELARATION * gravit
-        //     // console.log(gravit, this.x, this.horizontal, this.vel)
-        //     // this.x += gravit * this.horizontal * this.vel
-        //     // this.y += gravit * this.vertical * this.vel
-        // }
+            // const radius = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
+            // const radius = this.distance(centerX, centerY)
+            // const e = (5.972 * Math.pow(10, 24))
+            // const s = (1.989 * Math.pow(10, 30))
+            // const r = Math.pow(radius, 2)
+            // const g = -6 //-6.6742e-11
+            //     // console.log(e, s, r)
+            //     // const gravit = -(g * e * s / r)
+            //     // const x = this.x / radius
+            //     // const y = this.y / radius
+            //     // const vel = this.vel * ACELARATION * gravit
+            //     // console.log(gravit, this.x, this.horizontal, this.vel)
+            // const v = g * 10 * r * Math.pow(Math.abs(radius), -3)
+            // this.x += v
+            // this.y += v
+            // console.log(v)
+
+            // 1. vel += dt * radius * -G * mass * radius.abs() ^ -3
+            // 2. pos += dt * vel
+
+            // this.attract()
+            // this.gravity()
+            // this.moreOne()
+            this.again()
+        }
     }
+
+    again() {
+        // while (true) {
+        //     var dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+        //     E -= dE;
+        //     if (Math.abs(dE) < 1e-6) break;
+        // }
+        const r = this.distance(_blackHole.x, _blackHole.y) * Math.pow(10, 9);
+        var v = Math.sqrt(this.g * this.m / r)
+        var a = 1 / ((2 / r) - (Math.pow(v, 2) / this.G * this.m))
+        var n = Math.sqrt(this.g * this.m / Math.pow(a, 3))
+
+        const x = Math.cos(a) * n
+        const y = Math.sin(a) * n
+        console.log(x)
+        this.x = x
+        this.y = y
+    }
+
+    moreOne() {
+        const r = this.distance(_blackHole.x, _blackHole.y) * Math.pow(10, 9);
+        const Fg = 6.67 * Math.pow(10, -11) * this.m * _blackHole.m / Math.pow(r, 2);
+        var angle = Math.atan((_blackHole.y - this.y) / (this.x - _blackHole.x));
+        if (this.x < _blackHole.x) {
+            angle += Math.PI
+        }
+        const dt = 1;
+        const Fgx = Math.cos(angle) * Fg
+        const Fgy = Math.sin(angle) * Fg
+        const ay = Fgy / this.m;
+        const ax = -Fgx / this.m;
+        this.velY += ay * dt;
+        this.velX += ax * dt;
+        this.y += this.velY * dt;
+        this.x += this.velX * dt;
+
+        if (this.distance(_blackHole.x, _blackHole.y) < 50) {
+            console.log(r, Fg, angle, this.x, this.y, Fgx, Fgy, ay, ax, this.velX, this.velY, this.m, this.color)
+        }
+    }
+
+    orbit() {
+        const d = this.distance(_blackHole.x, _blackHole.y)
+        var s = 6.6742e-11 * (this.m * _blackHole.m / d)
+        const a = Math.sqrt(s)
+            // console.log(s, a)
+        var theta = Math.atan2(this.y - _blackHole.y, this.x - _blackHole.x);
+
+        const ax = Math.cos(theta) * -a * this.x / d
+        const ay = Math.sin(theta) * -a * this.y / d
+
+        this.dt = .00000000001
+        this.velX -= ax * this.dt
+        this.velY -= ay * this.dt
+        this.x += this.velX * this.dt
+        this.y += this.velY * this.dt
+        console.log(this.velX, this.velY)
+    }
+
+    gravity() {
+        const d = this.distance(_blackHole.x, _blackHole.y)
+        const a = -6.6742e-11 * this.m / Math.pow(d, 2)
+
+        var theta = Math.atan2(this.y - _blackHole.y, this.x - _blackHole.x);
+
+        const ax = Math.cos(theta) * a * this.x / d
+        const ay = Math.sin(theta) * a * this.y / d
+
+        this.dt = .0001
+        this.velX += ax * this.dt
+        this.velY += ay * this.dt
+        this.x += Math.sqrt(this.velX) * this.dt
+        this.y += this.velY * this.dt
+            // console.log(this.x, this.velX)
+    }
+
+    attract() {
+
+        var dx = this.normalize(this.x - _blackHole.x, maxWidth, 0)
+        var dy = this.normalize(this.y - _blackHole.y, maxHeight, 0)
+        const d = this.distance(_blackHole.x, _blackHole.y)
+
+        // console.log(dx, dy)
+        const magnitude = (this.m * _blackHole.m) / Math.pow(d, 2) * -1
+
+        dx *= magnitude * MAX_VEL
+        dy *= magnitude * MAX_VEL
+
+        this.x += dx
+        this.y += dy
+        console.log(this.x, this.velX)
+    }
+
+    normalize(val, max, min) { return (val - min) / (max - min); }
 
     // There is not delay, so i can put the max or min value without aceleration
     applyForce() {
@@ -319,7 +447,7 @@ class Star {
 
     draw() {
         ctx.fillStyle = this.color
-        // ctx.fillRect(this.x, this.y, this.size, this.size)
+            // ctx.fillRect(this.x, this.y, this.size, this.size)
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
         ctx.fill();
