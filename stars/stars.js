@@ -250,8 +250,14 @@ class Star {
             // this.attract()
             // this.gravity()
             // this.moreOne()
-            this.again()
+            // this.again()
         }
+    }
+
+    moreOneAgain(){
+        // http://www.stjarnhimlen.se/comp/tutorial.html
+      
+
     }
 
     again() {
