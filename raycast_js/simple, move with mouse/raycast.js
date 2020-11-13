@@ -1,4 +1,3 @@
-
 var ctx
 var delay = 1000 / 30
 var maxWidth = window.innerWidth
@@ -19,7 +18,7 @@ const COLOR_TOUCH = "red"
 const COLOR_BACKGROUND = "black"
 const COLOR_WALL = "blue"
 
-window.onload = function () {
+window.onload = function() {
     var canvas = document.getElementById("canvas")
     canvas.width = maxWidth
     canvas.height = maxHeight
@@ -34,7 +33,7 @@ function onMouseMove(event) {
 }
 
 function init() {
-    setInterval(function () {
+    setInterval(function() {
         drawBackground();
         for (let w of walls) {
             w.draw()
